@@ -6,17 +6,22 @@ namespace PaymentGateway
     
     public class Card : ICreditCardValidation
     {
-        private string Number;
-        private ExpirationMonthAndYear ExpirationMonthAndYear;
-        private SecureString CVV;
+        public string Number { get; set; }
+        public ExpirationMonthAndYear ExpirationMonthAndYear { get; set; }
+        public string CVV { get; set; }
         public Card(string number, ExpirationMonthAndYear expiration,string cvv)
         {
             Number = number;
             ExpirationMonthAndYear = expiration;
-            CVV = new SecureString();
-            foreach(char c in cvv.ToCharArray()){
-                CVV.AppendChar(c);
-            }
+            CVV = cvv;
+            //foreach(char c in cvv.ToCharArray()){
+            //    CVV.AppendChar(c);
+            //}
+        }
+
+        public Card()
+        {
+
         }
 
         public bool CheckCVV() {
@@ -31,7 +36,7 @@ namespace PaymentGateway
 
         ~Card()
         {
-            CVV.Dispose();
+           // CVV.Dispose();
             
         }
 
@@ -46,13 +51,18 @@ namespace PaymentGateway
 
     public class ExpirationMonthAndYear
     {
-        private readonly string Month;
-        private readonly string Year;
+        public string Month { get; set; }
+        public string Year { get; set; }
 
         public ExpirationMonthAndYear(string month, string year)
         {
             Month = month;
             Year = year;
+        }
+
+        public ExpirationMonthAndYear()
+        {
+
         }
 
         public bool CardHasNotExpiredYet()

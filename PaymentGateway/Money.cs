@@ -6,8 +6,8 @@ namespace PaymentGateway
 {
     public class Money
     {
-        private float Amount; //float vs string... Choosing float for memory performance
-        private string Currency;
+        public float Amount { get; set; } //float vs string... Choosing float for memory performance
+        public string Currency { get; set; }
 
 
         public Money(float amount, string currency)
@@ -20,6 +20,12 @@ namespace PaymentGateway
         {
             Amount = amount;
         }
+
+        public Money()
+        {
+
+        }
+
 
         public void SetCurrency(string currency)
         {
