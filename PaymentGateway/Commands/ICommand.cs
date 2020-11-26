@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
+using PaymentGateway.Events;
+
 namespace PaymentGateway.Commands
 {
-    public interface ICommand
+    public interface ICommand<IEvent>
     {
+        Task<IEvent> Execute();
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PaymentGateway.Commands;
+using PaymentGateway.Events;
 using PaymentGateway.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -20,10 +22,28 @@ namespace PaymentGateway.Controllers
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        public IActionResult Post([FromBody] AuthorizationRequestModel request, [FromServices] IGuid guidGenerator)
+        public async Task<IActionResult> Post([FromBody] AuthorizationRequestModel request, [FromServices] IGuid transactionIDGenerator, [FromServices] ITransactionsBucket transactionsBucket)
         {
-            Guid g = guidGenerator.Create();
-            return new OkObjectResult(new AuthorizationSuccessModel(g, request.Money));
+            TransactionID tID = new TransactionID(transactionIDGenerator.Create());
+            // transactionsBucket.CreateTransactionRecord(transaction);
+            AuthorizeCommand command = new AuthorizeCommand(tID,request.Card,request.Money);
+            var result = await command.Execute();         
+            switch (result)
+            {
+                case AuthorizationSuccessEvent:
+                   // AuthorizationSuccessEvent evt = (result as AuthorizationSuccessEvent);
+                    transactionsBucket.CreateTransactionRecord(new Transaction(tID,command.Card,command.Money));
+                    return new OkObjectResult(result as AuthorizationSuccessEvent);
+                case AuthorizationFailedEvent:
+                    return BadRequest(result);
+                default:
+                    return Unauthorized();
+                    
+            }
+               
+            
+
+           // return new OkObjectResult(new AuthorizationSuccessModel(g, request.Money));
             //return AcceptedAtRoute(nameof(AuthorizationSuccessModel),
             //           routeValues: new { gateWayPaymentId = paymentDto.GatewayPaymentId },
             //           value: paymentDto);

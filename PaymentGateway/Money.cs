@@ -43,7 +43,7 @@ namespace PaymentGateway
             {
                 errors.Add("Amount is negative.");
             }
-            return errors.Any();
+            return !errors.Any();
 
         }
 

@@ -40,7 +40,7 @@ namespace PaymentGateway
                 errors.Add("Credit card expired");
             }
 
-            return errors.Any();
+            return !errors.Any();
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security;
 
 namespace PaymentGateway
@@ -40,10 +41,10 @@ namespace PaymentGateway
             
         }
 
-        public bool IsCreditCardValid()
+        public bool IsCreditCardValid(out List<String> errors)
         {
             ICreditCardValidation validator = this;
-            return validator.CheckCard(this, out _);
+            return validator.CheckCard(this, out errors);
         }
 
  
@@ -68,15 +69,23 @@ namespace PaymentGateway
         public bool CardHasNotExpiredYet()
         {
             DateTime Dt = DateTime.Now;
-            if(int.Parse(Year) > (Dt.Year % 100))
+            try
             {
-                return true;
-            }else if(int.Parse(Year) == (Dt.Year % 100))
-            {
-                if (int.Parse(Month) >= Dt.Month)
+                if (int.Parse(Year) > (Dt.Year % 100))
                 {
                     return true;
                 }
+                else if (int.Parse(Year) == (Dt.Year % 100))
+                {
+                    if (int.Parse(Month) >= Dt.Month)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (FormatException ex)
+            {
+                return false;
             }
             return false;
         }

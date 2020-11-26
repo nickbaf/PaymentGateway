@@ -1,18 +1,13 @@
 ﻿using System;
 namespace PaymentGateway
 {
-    public class TransactionID : IGuid
+    public class TransactionID
     {
-        private Guid ID { get; }
+        public Guid ID { get; }
 
         public TransactionID(Guid iD)
         {
             ID = iD;
-        }
-
-        public Guid Create()
-        {
-            return Guid.NewGuid();
         }
     }
 }

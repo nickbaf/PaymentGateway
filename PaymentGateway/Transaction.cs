@@ -3,11 +3,11 @@ namespace PaymentGateway
 {
     public class Transaction:ITransaction
     {
-        private Guid TransactionID { get; }
-        private Money Money { get; }
-        private Card Card { get; }
+        public TransactionID TransactionID { get; }
+        public Money Money { get; }
+        public Card Card { get; }
 
-        public Transaction(Guid transactionID, Money money, Card card)
+        public Transaction(TransactionID transactionID, Card card, Money money)
         {
             TransactionID = transactionID;
             Money = money;

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace PaymentGateway.Events
 {
     public abstract class BaseEvent:IEvent
@@ -16,21 +18,22 @@ namespace PaymentGateway.Events
     }
 
 
-    public class AuthorizeFailedEvent : BaseEvent
+    public class AuthorizationFailedEvent : BaseEvent
     {
-        Guid TransactionID;
-        //maybe we need reason TODO!
-        public AuthorizeFailedEvent(Guid transactionID,string cardNumber,Money money):base(cardNumber,money)
+        public TransactionID TransactionID { get; }
+        public ErrorList Errors { get; }
+        public AuthorizationFailedEvent(TransactionID transactionID,string cardNumber,Money money,ErrorList list):base(cardNumber,money)
         {
             TransactionID = transactionID;
+            Errors = list;
         }
     }
 
     public class AuthorizationSuccessEvent: BaseEvent
     {
-        Guid TransactionID;
+        public TransactionID TransactionID { get; }
 
-        public AuthorizationSuccessEvent(Guid transactionID, string cardNumber, Money money) : base(cardNumber, money)
+        public AuthorizationSuccessEvent(TransactionID transactionID, string cardNumber, Money money) : base(cardNumber, money)
         {
             TransactionID = transactionID;
         }
