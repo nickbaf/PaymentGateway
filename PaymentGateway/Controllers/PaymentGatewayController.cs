@@ -34,7 +34,6 @@ namespace PaymentGateway.Controllers
             switch (result)
             {
                 case AuthorizationSuccessEvent:
-                   // AuthorizationSuccessEvent evt = (result as AuthorizationSuccessEvent);
                     transactionsBucket.CreateTransactionRecord(new Transaction(tID,command.Card,command.Money));
                     return new OkObjectResult(result as AuthorizationSuccessEvent);
                 case AuthorizationFailedEvent:

@@ -11,8 +11,24 @@ namespace PaymentGateway
 
         public sealed bool LuhnCheck(Card c)
         {
-            return true;
+           
+            String CardNumber = c.Number;
+            short sum = short.Parse(CardNumber[CardNumber.Length - 1].ToString());
+            short b;
+            for (int i = 0; i < CardNumber.Length-1; i++)
+            {
+                //not the most elegant way I know..... :(
+                b = short.Parse(CardNumber[i].ToString());
+                if (i % 2 == 0) b *= 2;
+
+
+                if (b > 9) b -= 9;
+
+                sum += b;
+            }
+            return sum % 10 == 0;
         }
+    
 
         public sealed bool BasicCVVCheck(Card c)
         {

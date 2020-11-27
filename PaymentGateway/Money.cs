@@ -100,6 +100,11 @@ namespace PaymentGateway
             return !errors.Any();
 
         }
+
+        public Money Clone()
+        {
+            return new Money(this.Amount, this.Currency);
+        }
     }
 
 }
