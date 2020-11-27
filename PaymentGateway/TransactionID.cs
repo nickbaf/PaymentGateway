@@ -9,5 +9,15 @@ namespace PaymentGateway
         {
             ID = iD;
         }
+
+        public override bool Equals(Object obj)
+        {
+            return ID.Equals((obj as TransactionID).ID);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

@@ -5,25 +5,33 @@ namespace PaymentGateway
 {
     public class TransactionBucket: ITransactionsBucket
     {
-        private ConcurrentDictionary<TransactionID, Transaction> Bucket=new ConcurrentDictionary<TransactionID, Transaction>();
 
-       
-public bool CreateTransactionRecord(Transaction transaction)
+        private ConcurrentDictionary<Guid, Transaction> Bucket = new ConcurrentDictionary<Guid, Transaction>();
+        public void Initialize()
         {
-            if (!Bucket.TryAdd(transaction.TransactionID, transaction)){
+            Bucket = new ConcurrentDictionary<Guid, Transaction>();
+
+        }
+        public bool PutTransactionRecord(Transaction transaction)
+        {
+            if (!Bucket.TryAdd(transaction.TransactionID.ID, transaction)){
                 return false;            }
             return true;
         }
 
- 
-      public Transaction RetrieveTransactionRecord(TransactionID transactionID)
+        public void CreateTransactionRecord(Transaction transaction)
         {
-            Bucket.TryGetValue(transactionID,out Transaction t);
-            if (t == null)
+            Bucket.TryAdd(transaction.TransactionID.ID, transaction);
+        }
+
+        public bool RetrieveTransactionRecord(TransactionID transactionID, out Transaction transaction)
+        {
+            Bucket.TryRemove(transactionID.ID,out transaction);
+            if (transaction == null)
             {
-                return null;
+                return false;
             }
-            return t;
+            return true;
         }
 
      

@@ -3,12 +3,12 @@ namespace PaymentGateway.Models
 {
     public class VoidRequestModel
     {
-        public VoidRequestModel(Guid transactionID)
+        public VoidRequestModel(TransactionID transactionID)
         {
             TransactionID = transactionID;
         }
 
-        public Guid TransactionID { get; }
+        public TransactionID TransactionID { get; }
 
     }
 }

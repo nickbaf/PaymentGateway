@@ -3,13 +3,13 @@ namespace PaymentGateway.Models
 {
     public class RefundRequestModel
     {
-        public RefundRequestModel(Guid transactionID, Money money)
+        public RefundRequestModel(TransactionID transactionID, Money money)
         {
             TransactionID = transactionID;
             Money = money;
         }
 
-        public Guid TransactionID { get; }
+        public TransactionID TransactionID { get; }
         public Money Money { get; }
     }
 }

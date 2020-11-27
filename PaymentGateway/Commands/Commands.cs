@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using PaymentGateway.Events;
 
@@ -47,11 +48,35 @@ namespace PaymentGateway.Commands
 
     public class CaptureCommand : ICommand<IEvent>
     {
-        private Guid TransactionID;
-        private Money Money;
-        public Task<IEvent> Execute()
+        public TransactionID TransactionID; //obsolete
+        public Money MoneyToCapture;
+        public Transaction Transaction;
+        public ErrorList Errors = new ErrorList();
+
+        public CaptureCommand(TransactionID transactionID, Money money,Transaction transaction)
         {
-            throw new NotImplementedException();
+            TransactionID = transactionID;
+            MoneyToCapture = money;
+            Transaction = transaction;
+        }
+
+        public async Task<IEvent> Execute()
+        {
+            bool ValidMoneyTransaction = Transaction.Money.ValidateMoneyToCapture(MoneyToCapture, out List<string> MoneyToBeCapturedChecks);
+            Errors.MultiErrorsThrown(MoneyToBeCapturedChecks);
+            if (ValidMoneyTransaction)
+            {
+                List<String> ValidTransactionErrors = await Transaction.CaptureTransaction(MoneyToCapture);
+                Errors.MultiErrorsThrown(ValidTransactionErrors);
+                if (!ValidTransactionErrors.Any())
+                {
+                    return new CaptureSuccessEvent(null,Transaction.Card.Number,MoneyToCapture);
+                }
+                
+            }
+
+            return new CaptureFailedEvent(Transaction.Card.Number, MoneyToCapture,Errors);
+
         }
     }
 
@@ -60,10 +85,19 @@ namespace PaymentGateway.Commands
 
     public class VoidCommand : ICommand<IEvent>
     {
-        private Guid TransactionID;
-        public Task<IEvent> Execute()
+        public Transaction Transaction;
+        public ErrorList Errors = new ErrorList();
+
+        public VoidCommand(Transaction transaction)
         {
-            throw new NotImplementedException();
+            Transaction = transaction;
+        }
+
+        public async Task<IEvent> Execute()
+        {
+            //contact bank
+            return new VoidSuccessEvent(Transaction.Card.Number,Transaction.Money);
+
         }
     }
 
@@ -72,11 +106,31 @@ namespace PaymentGateway.Commands
 
     public class RefundCommand : ICommand<IEvent>
     {
-        private Guid TransactionID;
-        private Money Money;
-        public Task<IEvent> Execute()
+        public Money MoneyToRefund;
+        public Transaction Transaction;
+        public ErrorList Errors = new ErrorList();
+
+        public RefundCommand(Money moneyToRefund, Transaction transaction)
         {
-            throw new NotImplementedException();
+            MoneyToRefund = moneyToRefund;
+            Transaction = transaction;
+        }
+
+        public async Task<IEvent> Execute()
+        {
+            bool ValidMoneyTransaction = Transaction.AlreadyCapturedMoney.ValidateMoneyToCapture(MoneyToRefund, out List<string> MoneyToBeRefundedChecks);
+            Errors.MultiErrorsThrown(MoneyToBeRefundedChecks);
+            if (ValidMoneyTransaction)
+            {
+                List<String> ValidTransactionErrors = await Transaction.RefundTransaction(MoneyToRefund);
+                Errors.MultiErrorsThrown(ValidTransactionErrors);
+                if (!ValidTransactionErrors.Any())
+                {
+                    return new RefundSuccessEvent(Transaction.Card.Number, MoneyToRefund);
+                }
+
+            }
+            return new RefundFailedEvent(Transaction.Card.Number, MoneyToRefund, Errors);
         }
     }
 
