@@ -7,5 +7,6 @@ namespace PaymentGateway.Commands
     public interface ICommand<IEvent>
     {
         Task<IEvent> Execute();
+        void SentCommandToBank(ICommand<IEvent> command);
     }
 }

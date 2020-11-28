@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Events;
 
@@ -40,10 +41,19 @@ namespace PaymentGateway.Commands
 
             if(ValidCard!=null && ValidCard!=false && ValidMoney!=null && ValidMoney!=false)
             {
+                SentCommandToBank(this);
                 return new AuthorizationSuccessEvent(TransactionID, Card.Number, Money);
             }
             return new AuthorizationFailedEvent(TransactionID, Card?.Number, Money,Errors);
         }
+
+        public void SentCommandToBank(ICommand<IEvent> command)
+        {
+
+            Bank.SendCommand(command);
+        }
+
+     
     }
 
 
@@ -73,6 +83,7 @@ namespace PaymentGateway.Commands
                 Errors.MultiErrorsThrown(ValidTransactionErrors);
                 if (IsValidMoneyTransaction is not null && !ValidTransactionErrors.Any())
                 {
+                    SentCommandToBank(this);
                     return new CaptureSuccessEvent(Transaction.Card.Number,Transaction.Money);
                 }
                 
@@ -80,6 +91,12 @@ namespace PaymentGateway.Commands
 
             return new CaptureFailedEvent(Transaction?.Card?.Number, Transaction?.Money, Errors);
 
+        }
+
+        public void SentCommandToBank(ICommand<IEvent> command)
+        {
+
+            Bank.SendCommand(command);
         }
     }
 
@@ -105,8 +122,15 @@ namespace PaymentGateway.Commands
                 errorList.SingleErrorThrown("Void failed as a capture/refund has been made.");
                 return new VoidFailedEvent(Transaction?.Card?.Number, Transaction?.Money,errorList);
             }
+            SentCommandToBank(this);
             return new VoidSuccessEvent(Transaction?.Card?.Number,Transaction?.Money);
 
+        }
+
+        public void SentCommandToBank(ICommand<IEvent> command)
+        {
+
+            Bank.SendCommand(command);
         }
     }
 
@@ -136,12 +160,21 @@ namespace PaymentGateway.Commands
                 Errors.MultiErrorsThrown(ValidTransactionErrors);
                 if (!ValidTransactionErrors.Any())
                 {
+                    SentCommandToBank(this);
                     return new RefundSuccessEvent(Transaction.Card.Number, MoneyToRefund);
                 }
 
             }
             return new RefundFailedEvent(Transaction?.Card?.Number, MoneyToRefund, Errors);
         }
+
+        public void SentCommandToBank(ICommand<IEvent> command)
+        {
+
+            Bank.SendCommand(command);
+        }
+
+        
     }
 
 }
