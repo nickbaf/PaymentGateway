@@ -10,24 +10,26 @@ namespace PaymentGateway.Events
             CardNumber = cardNumber;
             AmountAndCurrencyAvailable = amountAndCurrencyAvailable;
             Errors = errors;
-        }
-
+        }      
         public string? CardNumber { get; }
         public Money? AmountAndCurrencyAvailable { get; }
-        public ErrorList? Errors { get; }
+        private ErrorList? Errors { get; }
 
-
+        public string FormatError(string cardNumber, ErrorList errors)
+        {
+            return cardNumber + " " + errors.ToOneLinerString();
+        }
     }
 
 
     public class AuthorizationFailedEvent : BaseEvent
     {
-        public TransactionID TransactionID { get; }
-        public ErrorList Errors { get; }
+        public TransactionID? TransactionID { get; }
+        public string? Error { get; }
         public AuthorizationFailedEvent(TransactionID transactionID,string cardNumber,Money money,ErrorList list):base(cardNumber,money,list)
         {
             TransactionID = transactionID;
-            Errors = list;
+            Error = FormatError(cardNumber, list);
         }
     }
 
@@ -45,7 +47,10 @@ namespace PaymentGateway.Events
 
     public class CaptureFailedEvent : BaseEvent
     {
-        public CaptureFailedEvent(string cardNumber,Money money,ErrorList list) : base(cardNumber, money,list) { }
+        public string? Error { get; }
+        public CaptureFailedEvent(string cardNumber,Money money,ErrorList list) : base(cardNumber, money,list) {
+            Error = FormatError(cardNumber, list);
+        }
     }
 
     public class CaptureSuccessEvent : BaseEvent
@@ -59,7 +64,10 @@ namespace PaymentGateway.Events
 
     public class VoidFailedEvent : BaseEvent
     {
-        public VoidFailedEvent(string cardNumber, Money money,ErrorList list) : base(cardNumber, money,list) { }
+        public string? Error { get; }
+        public VoidFailedEvent(string cardNumber, Money money,ErrorList list) : base(cardNumber, money,list) {
+            Error = FormatError(cardNumber, list);
+        }
     }
     public class VoidSuccessEvent : BaseEvent
     {
@@ -69,7 +77,10 @@ namespace PaymentGateway.Events
 
     public class RefundFailedEvent : BaseEvent
     {
-        public RefundFailedEvent(string cardNumber, Money money,ErrorList list) : base(cardNumber, money,list) { }
+        public string? Error { get; }
+        public RefundFailedEvent(string cardNumber, Money money,ErrorList list) : base(cardNumber, money,list) {
+            Error = FormatError(cardNumber, list);
+        }
     }
     public class RefundSuccessEvent : BaseEvent
     {

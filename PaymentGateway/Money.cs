@@ -57,21 +57,21 @@ namespace PaymentGateway
                 errors.Add("Capture money invalid format");
                 return !errors.Any();
             }
-            if (moneyToBeCaptured.Amount == 0)
+            if (moneyToBeCaptured?.Amount == 0)
             {
                 errors.Add("Amount is zero.");
             }
-            else if (moneyToBeCaptured.Amount < 0)
+            else if (moneyToBeCaptured?.Amount < 0)
             {
                 errors.Add("Amount is negative.");
             }
 
-            if (!Currency.ToUpper().Equals(moneyToBeCaptured.Currency.ToUpper()))
+            if (!Currency.ToUpper().Equals(moneyToBeCaptured?.Currency?.ToUpper()))
             {
                 errors.Add("Invalid Currency.");
             }
 
-            if ((Amount - moneyToBeCaptured.Amount) < 0)
+            if ((Amount - moneyToBeCaptured?.Amount) < 0)
             {
                 errors.Add("Cannot capture more than the authorized amount.");
             }
@@ -98,12 +98,12 @@ namespace PaymentGateway
                 errors.Add("Amount is negative.");
             }
 
-            if (!Currency.ToUpper().Equals(moneyToBeRefunded.Currency.ToUpper()))
+            if (!Currency.ToUpper().Equals(moneyToBeRefunded?.Currency?.ToUpper()))
             {
                 errors.Add("Invalid Currency");
             }
 
-            if ((Amount - moneyToBeRefunded.Amount) < 0)
+            if ((Amount - moneyToBeRefunded?.Amount) < 0)
             {
                 errors.Add("Cannot refund more than the amount already captured.");
             }

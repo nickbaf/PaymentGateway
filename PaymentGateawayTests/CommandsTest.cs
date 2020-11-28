@@ -67,28 +67,34 @@ namespace PaymentGateawayTests
         [Test]
         public void ValidVoidCommand()
         {
-
+            Check.That(new VoidCommand(t).Execute().Result).IsInstanceOf<VoidSuccessEvent>();
         }
 
         [Test]
         public void InvalidVoidCommand()
         {
-
+            Check.That(new VoidCommand(null).Execute().Result).IsInstanceOf<VoidSuccessEvent>();
         }
 
         [Test]
         public void ValidRefundCommand()
         {
-
+            t = new Transaction(new TransactionID(), c, new Money(0f, "JPY"));
+            t.SetAlreadyCapturedMoney(m);
+            Check.That(new RefundCommand(m,t).Execute().Result).IsInstanceOf<RefundSuccessEvent>();
         }
 
         [Test]
-        public void InValidRefundCommand()
+        public void InValidRefundCommand_BecauseMoneyInvalid()
         {
-
+            Check.That(new RefundCommand(new Money(float.MaxValue, null), t).Execute().Result).IsInstanceOf < RefundFailedEvent>();
         }
 
-
+        [Test]
+        public void InValidRefundCommand_BecauseNullArguments()
+        {
+            Check.That(new RefundCommand(null,null).Execute().Result).IsInstanceOf<RefundFailedEvent>();
+        }
 
 
 

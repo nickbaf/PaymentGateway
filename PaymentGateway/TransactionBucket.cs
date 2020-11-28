@@ -26,6 +26,11 @@ namespace PaymentGateway
 
         public bool RetrieveTransactionRecord(TransactionID transactionID, out Transaction transaction)
         {
+            if (transactionID == null)
+            {
+                transaction = null;
+                return false;
+            }
             Bucket.TryRemove(transactionID.ID,out transaction);
             if (transaction == null)
             {

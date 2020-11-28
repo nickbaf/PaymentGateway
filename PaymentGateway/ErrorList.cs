@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace PaymentGateway
 { 
@@ -29,6 +30,18 @@ namespace PaymentGateway
         public void SingleErrorThrown(string error)
         {
             Errors.Add(error);
+        }
+
+        public string ToOneLinerString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach(String s in Errors)
+            {
+                sb.Append('|');
+                sb.Append(s);
+                
+            }
+            return sb.ToString();
         }
     }
 }

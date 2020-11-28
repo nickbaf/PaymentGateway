@@ -7,6 +7,8 @@ using Moq;
 using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Models;
 using PaymentGateway.Events;
+using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace PaymentGateawayTests
 {
@@ -17,7 +19,8 @@ namespace PaymentGateawayTests
         [Test]
         public void ValidAuthorization()
         {
-            AuthorizeController Controller = new AuthorizeController();
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object);
 
             var MockBucket = new TransactionBucket();//new Mock<TransactionBucket>();
             var MockGuidGenerator = new TransactionIDGenerator();//new Mock<IGuid>();
@@ -41,7 +44,9 @@ namespace PaymentGateawayTests
         [Test]
         public void InValidAuthorization_Expired_CreditCard()
         {
-            AuthorizeController Controller = new AuthorizeController();
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object);
+
 
             var MockBucket = new TransactionBucket();//new Mock<TransactionBucket>();
             var MockGuidGenerator = new TransactionIDGenerator();//new Mock<IGuid>();
@@ -65,7 +70,8 @@ namespace PaymentGateawayTests
 
         public void InValidAuthorization_Negative_Amount()
         {
-            AuthorizeController Controller = new AuthorizeController();
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object);
 
             var MockBucket = new TransactionBucket();//new Mock<TransactionBucket>();
             var MockGuidGenerator = new TransactionIDGenerator();//new Mock<IGuid>();
@@ -89,7 +95,8 @@ namespace PaymentGateawayTests
 
         public void InValidAuthorization_Invalid_CreditCard()
         {
-            AuthorizeController Controller = new AuthorizeController();
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object);
 
             var MockBucket = new TransactionBucket();//new Mock<TransactionBucket>();
             var MockGuidGenerator = new TransactionIDGenerator();//new Mock<IGuid>();

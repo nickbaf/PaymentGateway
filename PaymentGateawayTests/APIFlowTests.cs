@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Events;
 using PaymentGateway.Models;
 using System.Threading.Tasks;
+using NLog;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace PaymentGateawayTests
 {
@@ -19,19 +22,23 @@ namespace PaymentGateawayTests
         VoidController VoidController;
         TransactionBucket TransactionBucket;
         TransactionIDGenerator TransactionIDGenerator;
-        Card c;
-        Money m;
+        Card Card;
+        Money Money;
         [SetUp]
         public void Setup()
         {
-             AuthController = new AuthorizeController();
-             CaptureController = new CaptureController();
-             RefundController = new RefundController();
-             VoidController = new VoidController();
-             TransactionBucket = new TransactionBucket();
-             TransactionIDGenerator = new TransactionIDGenerator();
-             c = new Card("5186124094923094", new ExpirationMonthAndYear("11", "25"), "123");
-             m = new Money(156.33F, "JPY");
+            var mockAuthLogger = new Mock<ILogger<AuthorizeController>>();
+            var mockCaptLogger = new Mock<ILogger<CaptureController>>();
+            var mockVoidLogger = new Mock<ILogger<VoidController>>();
+            var mockRefundLogger = new Mock<ILogger<RefundController>>();
+            AuthController = new AuthorizeController(mockAuthLogger.Object);
+            CaptureController = new CaptureController(mockCaptLogger.Object);
+            RefundController = new RefundController(mockRefundLogger.Object);
+            VoidController = new VoidController(mockVoidLogger.Object);
+            TransactionBucket = new TransactionBucket();
+            TransactionIDGenerator = new TransactionIDGenerator();
+            Card = new Card("5186124094923094", new ExpirationMonthAndYear("11", "25"), "123");
+            Money = new Money(156.33F, "JPY");
         }
 
 
@@ -40,7 +47,7 @@ namespace PaymentGateawayTests
         {
 
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             //Too many TypeCasts?Ahhhh ikr, had to cut some corners as time is finite.... :(
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money MoneyToCapture = new Money(156.33F, "JPY");
@@ -51,14 +58,14 @@ namespace PaymentGateawayTests
             CaptureSuccessEvent result = (CaptureSuccessEvent)(captureResponse as OkObjectResult).Value;
 
             Check.That<float>(result.AmountAndCurrencyAvailable.Amount).IsEqualTo<float>(0F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
         }
 
         [Test]
         public async Task SucessfullAuthorization_MultipleCapture()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             //Too many TypeCasts?Ahhhh ikr, had to cut some corners as time is finite.... :(
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
 
@@ -73,7 +80,7 @@ namespace PaymentGateawayTests
             CaptureSuccessEvent result = (CaptureSuccessEvent)(captureResponse as OkObjectResult).Value;
 
             Check.That<double>(result.AmountAndCurrencyAvailable.Amount).IsCloseTo(0F,0.01F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
         }
 
 
@@ -81,7 +88,7 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_SingleRefund()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money moneyToCaptureAndRefund = new Money(56.33F, "JPY");
             await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund), TransactionBucket);
@@ -91,7 +98,7 @@ namespace PaymentGateawayTests
             RefundSuccessEvent result = (RefundSuccessEvent)(refundResponse as OkObjectResult).Value;
 
             Check.That<double>(result.AmountAndCurrencyAvailable.Amount).IsCloseTo(56.33F, 0.01F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
 
 
         }
@@ -100,7 +107,7 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_MultipleRefund()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money moneyToCaptureAndRefund = new Money(156.33F, "JPY");
             await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund), TransactionBucket);
@@ -115,7 +122,7 @@ namespace PaymentGateawayTests
             RefundSuccessEvent result = (RefundSuccessEvent)(refundResponse as OkObjectResult).Value;
 
             Check.That<double>(result.AmountAndCurrencyAvailable.Amount).IsCloseTo(0F, 0.01F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
 
         }
 
@@ -123,7 +130,7 @@ namespace PaymentGateawayTests
         public void SucessfullAuthorization_Void()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             var voidResponse = VoidController.Get(new VoidRequestModel(tID), TransactionBucket).Result;
             Check.That(voidResponse).IsInstanceOf<OkObjectResult>();
@@ -131,7 +138,7 @@ namespace PaymentGateawayTests
             VoidSuccessEvent result = (VoidSuccessEvent)(voidResponse as OkObjectResult).Value;
 
             Check.That<double>(result.AmountAndCurrencyAvailable.Amount).IsCloseTo(156.33F, 0.01F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
         }
 
 
@@ -141,7 +148,7 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_SingleRefund_FailedCapture()
         {
             var response = AuthController.Post(
-           new PaymentGateway.Models.AuthorizationRequestModel(c, m), TransactionIDGenerator, TransactionBucket).Result;
+           new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             await CaptureController.Get(new CaptureRequestModel(tID, new Money(16.33F, "JPY")), TransactionBucket);
             await RefundController.Get(new RefundRequestModel(tID, new Money(6.33F, "JPY")), TransactionBucket);
@@ -151,7 +158,7 @@ namespace PaymentGateawayTests
             CaptureFailedEvent result = (CaptureFailedEvent)(failedCapture as BadRequestObjectResult).Value;
 
             Check.That<double>(result.AmountAndCurrencyAvailable.Amount).IsCloseTo(146.33F, 0.01F);
-            Check.That<string>(result.CardNumber).Equals(c.Number);
+            Check.That<string>(result.CardNumber).Equals(Card.Number);
 
 
         }
