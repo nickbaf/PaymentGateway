@@ -13,7 +13,8 @@ namespace PaymentGateway
         {
            
             String CardNumber = c.Number;
-            short sum = short.Parse(CardNumber[CardNumber.Length - 1].ToString());
+            
+            if (!short.TryParse(CardNumber[CardNumber.Length - 1].ToString(), out short sum)) return false;
             short b;
             for (int i = 0; i < CardNumber.Length-1; i++)
             {
@@ -35,7 +36,7 @@ namespace PaymentGateway
             return c.CheckCVV();
         }
 
-        public sealed bool CheckExpirationDate(Card c)
+        public sealed bool? CheckExpirationDate(Card c)
         {
             return c.CheckExpiry();
         }
@@ -51,7 +52,8 @@ namespace PaymentGateway
             {
                 errors.Add("CVV number invalid");
             }
-            if (!CheckExpirationDate(c))
+            bool? expirationDateCheck = CheckExpirationDate(c);
+            if (expirationDateCheck == null || expirationDateCheck == false )
             {
                 errors.Add("Credit card expired");
             }

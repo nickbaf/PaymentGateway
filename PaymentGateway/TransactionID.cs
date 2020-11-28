@@ -10,6 +10,11 @@ namespace PaymentGateway
             ID = iD;
         }
 
+        public TransactionID()
+        {
+            ID = new Guid();
+        }
+
         public override bool Equals(Object obj)
         {
             return ID.Equals((obj as TransactionID).ID);

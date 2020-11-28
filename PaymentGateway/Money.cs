@@ -52,6 +52,11 @@ namespace PaymentGateway
         {
             errors = new List<string>();
 
+            if (moneyToBeCaptured == null)
+            {
+                errors.Add("Capture money invalid format");
+                return !errors.Any();
+            }
             if (moneyToBeCaptured.Amount == 0)
             {
                 errors.Add("Amount is zero.");
@@ -79,6 +84,11 @@ namespace PaymentGateway
         {
             errors = new List<string>();
 
+            if (moneyToBeRefunded == null)
+            {
+                errors.Add("Refund money invalid format");
+                return !errors.Any();
+            }
             if (moneyToBeRefunded.Amount == 0)
             {
                 errors.Add("Amount is zero.");

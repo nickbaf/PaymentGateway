@@ -62,20 +62,21 @@ namespace PaymentGateway.Commands
 
         public async Task<IEvent> Execute()
         {
-            bool ValidMoneyTransaction = Transaction.Money.ValidateMoneyToCapture(MoneyToCapture, out List<string> MoneyToBeCapturedChecks);
+            List<String> MoneyToBeCapturedChecks = new List<string>();
+            bool? ValidMoneyTransaction = Transaction?.Money?.ValidateMoneyToCapture(MoneyToCapture, out MoneyToBeCapturedChecks);
             Errors.MultiErrorsThrown(MoneyToBeCapturedChecks);
-            if (ValidMoneyTransaction)
+            if (ValidMoneyTransaction!=null&& ValidMoneyTransaction!=false)
             {
-                List<String> ValidTransactionErrors = await Transaction.CaptureTransaction(MoneyToCapture);
+                List<String>? ValidTransactionErrors = await Transaction?.CaptureTransaction(MoneyToCapture);
                 Errors.MultiErrorsThrown(ValidTransactionErrors);
-                if (!ValidTransactionErrors.Any())
+                if (ValidMoneyTransaction!=null && !ValidTransactionErrors.Any())
                 {
-                    return new CaptureSuccessEvent(null,Transaction.Card.Number,MoneyToCapture);
+                    return new CaptureSuccessEvent(Transaction.Card.Number,Transaction.Money);
                 }
                 
             }
 
-            return new CaptureFailedEvent(Transaction.Card.Number, MoneyToCapture,Errors);
+            return new CaptureFailedEvent(Transaction?.Card?.Number, Transaction?.Money, Errors);
 
         }
     }
@@ -96,6 +97,12 @@ namespace PaymentGateway.Commands
         public async Task<IEvent> Execute()
         {
             //contact bank
+            if(Transaction.Strategy is not null)
+            {
+               ErrorList errorList= new ErrorList();
+                errorList.SingleErrorThrown("Void failed as a capture/refund has been made.");
+                return new VoidFailedEvent(Transaction.Card.Number, Transaction.Money,errorList);
+            }
             return new VoidSuccessEvent(Transaction.Card.Number,Transaction.Money);
 
         }

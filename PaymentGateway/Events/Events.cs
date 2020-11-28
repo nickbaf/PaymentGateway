@@ -12,9 +12,9 @@ namespace PaymentGateway.Events
             Errors = errors;
         }
 
-        public string CardNumber { get; }
-        public Money AmountAndCurrencyAvailable { get; }
-        public ErrorList Errors { get; }
+        public string? CardNumber { get; }
+        public Money? AmountAndCurrencyAvailable { get; }
+        public ErrorList? Errors { get; }
 
 
     }
@@ -50,9 +50,8 @@ namespace PaymentGateway.Events
 
     public class CaptureSuccessEvent : BaseEvent
     {
-        public Transaction Transaction { get; }
-        public CaptureSuccessEvent(Transaction transaction, string cardNumber, Money money) : base(cardNumber, money,null) {
-            Transaction = transaction;
+       // public Transaction Transaction { get; }
+        public CaptureSuccessEvent(string cardNumber, Money money) : base(cardNumber, money,null) {
         }
     }
 

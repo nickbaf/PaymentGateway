@@ -15,7 +15,10 @@ namespace PaymentGateway
 
         public void MultiErrorsThrown(List<string> errors)
         {
-            Errors.AddRange(errors);
+            if (errors != null)
+            {
+                Errors.AddRange(errors);
+            }
         }
 
         public List<string> RetrieveErrorList()

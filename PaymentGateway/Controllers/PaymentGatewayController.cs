@@ -139,8 +139,8 @@ namespace PaymentGateway.Controllers
                     case RefundSuccessEvent:
                         // AuthorizationSuccessEvent evt = (result as AuthorizationSuccessEvent);
                         transactionsBucket.PutTransactionRecord(transaction); //updated transaction as pass by reference
-                        return new OkObjectResult(result as CaptureSuccessEvent);
-                    case CaptureFailedEvent:
+                        return new OkObjectResult(result as RefundSuccessEvent);
+                    case RefundFailedEvent:
                         transactionsBucket.PutTransactionRecord(transaction);
                         return BadRequest(result);
                     default:

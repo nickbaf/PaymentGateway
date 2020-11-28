@@ -7,6 +7,6 @@ namespace PaymentGateway
     {
         public void SingleErrorThrown(string error);
         public void MultiErrorsThrown(List<String> errors);
-        public List<String> RetrieveErrorList();
+        public List<String> RetrieveErrorList();        
     }
 }

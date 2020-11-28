@@ -26,12 +26,12 @@ namespace PaymentGateway
         }
 
         public bool CheckCVV() {
-            return CVV==null?false:true;
+            return short.TryParse(CVV,out _)?true:false;
         }
 
-        public bool CheckExpiry()
+        public bool? CheckExpiry()
         {
-            return ExpirationMonthAndYear.CardHasNotExpiredYet();
+            return ExpirationMonthAndYear?.CardHasNotExpiredYet();
         }
 
 
@@ -68,6 +68,10 @@ namespace PaymentGateway
 
         public bool CardHasNotExpiredYet()
         {
+            if(!int.TryParse(Year,out _) && !int.TryParse(Month,out _))
+            {
+                return false;
+            }
             DateTime Dt = DateTime.Now;
             try
             {
