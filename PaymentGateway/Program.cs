@@ -35,12 +35,6 @@ namespace PaymentGateway
 
         }
 
-        //public static IHostBuilder CreateHostBuilder(string[] args) =>
-        //    Host.CreateDefaultBuilder(args)
-        //        .ConfigureWebHostDefaults(webBuilder =>
-        //        {
-        //            webBuilder.UseStartup<Startup>();
-        //        });
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -53,7 +47,7 @@ namespace PaymentGateway
           logging.ClearProviders();
           logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
       })
-      .UseNLog();  // NLog: Setup NLog for Dependency injection
+      .UseNLog();  
 
     }
 }

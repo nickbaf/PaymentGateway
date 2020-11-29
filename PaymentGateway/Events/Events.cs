@@ -3,8 +3,20 @@ using System.Collections.Generic;
 
 namespace PaymentGateway.Events
 {
+    /// <summary>
+    /// Events are created as a response to a command. A succesfull processed command creates a success event
+    /// that we push back as a response to the API request. A command that produces errors when executing will result in
+    /// producing a failiure event that will be retured as a response to the API request.
+    /// </summary>
     public abstract class BaseEvent:IEvent
     {
+        /// <summary>
+        /// As per the exercise instructions for every failed output we return the cardNumber,
+        /// amount and the error message, that is the credit card number and the message.
+        /// </summary>
+        /// <param name="cardNumber"></param>
+        /// <param name="amountAndCurrencyAvailable"></param>
+        /// <param name="errors"></param>
         protected BaseEvent(string cardNumber, Money amountAndCurrencyAvailable,ErrorList errors)
         {
             CardNumber = cardNumber;
@@ -54,8 +66,7 @@ namespace PaymentGateway.Events
     }
 
     public class CaptureSuccessEvent : BaseEvent
-    {
-       // public Transaction Transaction { get; }
+    {      
         public CaptureSuccessEvent(string cardNumber, Money money) : base(cardNumber, money,null) {
         }
     }

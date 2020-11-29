@@ -15,9 +15,6 @@ namespace PaymentGateway
             Number = number;
             ExpirationMonthAndYear = expiration;
             CVV = cvv;
-            //foreach(char c in cvv.ToCharArray()){
-            //    CVV.AppendChar(c);
-            //}
         }
 
         public Card()
@@ -25,8 +22,16 @@ namespace PaymentGateway
 
         }
 
+        /// <summary>
+        /// From the tiny knowledge I have on payment systems:
+        /// In the book "The Phoenix Project"(great book for software engineers)
+        /// its mentioned that systems should never store the CVV after
+        /// the initial check. So I'm removing the reference after the initial check.
+        /// </summary>
         public bool CheckCVV() {
-            return short.TryParse(CVV,out _)?true:false;
+            bool result = short.TryParse(CVV, out _);
+            CVV = null;
+            return result;
         }
 
         public bool? CheckExpiry()
@@ -37,7 +42,7 @@ namespace PaymentGateway
 
         ~Card()
         {
-           // CVV.Dispose();
+            CVV = null;
             
         }
 

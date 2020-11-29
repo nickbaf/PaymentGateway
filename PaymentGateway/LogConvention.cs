@@ -1,6 +1,9 @@
 ﻿using System;
 namespace PaymentGateway
 {
+    /// <summary>
+    /// Class that is used as error message convention
+    /// </summary>
     public class LogConvention
     {
         Guid? ID;

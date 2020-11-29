@@ -100,7 +100,7 @@ namespace PaymentGateawayTests
             Check.That<List<String>>(TransactionErrors).IsEmpty<List<String>>();
         }
 
-        //TODO continue here
+        //tests should continue here
 
     }
 }

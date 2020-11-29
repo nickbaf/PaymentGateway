@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace PaymentGateway
 {
+    /// <summary>
+    /// Interface that Validates a credit card
+    /// </summary>
     public interface ICreditCardValidation
     {
 

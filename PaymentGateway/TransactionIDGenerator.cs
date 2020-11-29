@@ -1,6 +1,7 @@
 ﻿using System;
 namespace PaymentGateway
 {
+    //A class that creates Guids
     public class TransactionIDGenerator:IGuid
     {
         

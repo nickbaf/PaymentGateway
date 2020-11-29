@@ -3,6 +3,9 @@ using System.Collections.Concurrent;
 
 namespace PaymentGateway
 {
+    /// <summary>
+    /// The memory object that stores the transactions
+    /// </summary>
     public class TransactionBucket: ITransactionsBucket
     {
 

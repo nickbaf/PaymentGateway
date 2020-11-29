@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway
 {
-    public class Transaction : ITransaction //IBANK? NOT NBG's internet banking platform
+    public class Transaction : ITransaction 
     {
         public TransactionID TransactionID { get; }
         public Money Money { get; }
@@ -58,6 +58,9 @@ namespace PaymentGateway
     }
 
 
+    /// <summary>
+    /// Implementing the strategy design pattern, as a transaction can have 2 strategies, the capture or refund.
+    /// </summary>
     public class CaptureStrategy : ITransactionStrategy
     {
         public async Task<List<string>> DoTheTransaction(Transaction transaction, Money transactionMoney)
@@ -72,9 +75,10 @@ namespace PaymentGateway
                 }
                 else
                 {
+                    //In a perfect world we should never come here, as we
+                    //are doing a gazilion checks previously. But you never know....
                     throw new Exception("Internal Checks Failed.");
                 }
-                //send something to bank no?
 
             }
             catch (Exception ex)
@@ -97,7 +101,6 @@ namespace PaymentGateway
                 {
                     transaction.Money.Amount += transactionMoney.Amount;
                     transaction.AlreadyCapturedMoney.Amount -= transactionMoney.Amount;
-                    //send something to bank no?
                 }
                 else
                 {

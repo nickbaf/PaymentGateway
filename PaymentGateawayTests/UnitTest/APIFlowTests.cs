@@ -31,10 +31,11 @@ namespace PaymentGateawayTests
             var mockCaptLogger = new Mock<ILogger<CaptureController>>();
             var mockVoidLogger = new Mock<ILogger<VoidController>>();
             var mockRefundLogger = new Mock<ILogger<RefundController>>();
-            AuthController = new AuthorizeController(mockAuthLogger.Object);
-            CaptureController = new CaptureController(mockCaptLogger.Object);
-            RefundController = new RefundController(mockRefundLogger.Object);
-            VoidController = new VoidController(mockVoidLogger.Object);
+            var mockTransactionBucket = new Mock<TransactionBucket>();
+            AuthController = new AuthorizeController(mockAuthLogger.Object,mockTransactionBucket.Object);
+            CaptureController = new CaptureController(mockCaptLogger.Object, mockTransactionBucket.Object);
+            RefundController = new RefundController(mockRefundLogger.Object, mockTransactionBucket.Object);
+            VoidController = new VoidController(mockVoidLogger.Object, mockTransactionBucket.Object);
             TransactionBucket = new TransactionBucket();
             TransactionIDGenerator = new TransactionIDGenerator();
             Card = new Card("5186124094923094", new ExpirationMonthAndYear("11", "25"), "123");
@@ -47,11 +48,11 @@ namespace PaymentGateawayTests
         {
 
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             //Too many TypeCasts?Ahhhh ikr, had to cut some corners as time is finite.... :(
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money MoneyToCapture = new Money(156.33F, "JPY");
-            var captureResponse = CaptureController.Get(new CaptureRequestModel(tID, MoneyToCapture), TransactionBucket).Result;
+            var captureResponse = CaptureController.Get(new CaptureRequestModel(tID, MoneyToCapture)).Result;
 
             Check.That(captureResponse).IsInstanceOf<OkObjectResult>();
             Check.That((captureResponse as OkObjectResult).Value).IsInstanceOf<CaptureSuccessEvent>();
@@ -65,15 +66,14 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_MultipleCapture()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
-            //Too many TypeCasts?Ahhhh ikr, had to cut some corners as time is finite.... :(
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
 
             for (double f = 0; f < 156.31f; f += 0.0100F)
             {
-               await CaptureController.Get(new CaptureRequestModel(tID, new Money(0.01f, "JPY")), TransactionBucket);
+               await CaptureController.Get(new CaptureRequestModel(tID, new Money(0.01f, "JPY")));
             }
-            var captureResponse = CaptureController.Get(new CaptureRequestModel(tID, new Money(0.01f, "JPY")), TransactionBucket).Result;
+            var captureResponse = CaptureController.Get(new CaptureRequestModel(tID, new Money(0.01f, "JPY"))).Result;
 
             Check.That(captureResponse).IsInstanceOf<OkObjectResult>();
             Check.That((captureResponse as OkObjectResult).Value).IsInstanceOf<CaptureSuccessEvent>();
@@ -88,11 +88,11 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_SingleRefund()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money moneyToCaptureAndRefund = new Money(56.33F, "JPY");
-            await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund), TransactionBucket);
-            var refundResponse = RefundController.Get(new RefundRequestModel(tID, moneyToCaptureAndRefund), TransactionBucket).Result;
+            await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund));
+            var refundResponse = RefundController.Get(new RefundRequestModel(tID, moneyToCaptureAndRefund)).Result;
             Check.That(refundResponse).IsInstanceOf<OkObjectResult>();
             Check.That((refundResponse as OkObjectResult).Value).IsInstanceOf<RefundSuccessEvent>();
             RefundSuccessEvent result = (RefundSuccessEvent)(refundResponse as OkObjectResult).Value;
@@ -107,16 +107,16 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_MultipleRefund()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
             Money moneyToCaptureAndRefund = new Money(156.33F, "JPY");
-            await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund), TransactionBucket);
+            await CaptureController.Get(new CaptureRequestModel(tID, moneyToCaptureAndRefund));
             for (double f = 0; f < 156.31f; f += 0.0100F)
             {
-                await RefundController.Get(new RefundRequestModel(tID, new Money(0.01f,"JPY")), TransactionBucket);
+                await RefundController.Get(new RefundRequestModel(tID, new Money(0.01f,"JPY")));
 
             }
-            var refundResponse = RefundController.Get(new RefundRequestModel(tID, new Money(0.01f, "JPY")), TransactionBucket).Result;
+            var refundResponse = RefundController.Get(new RefundRequestModel(tID, new Money(0.01f, "JPY"))).Result;
             Check.That(refundResponse).IsInstanceOf<OkObjectResult>();
             Check.That((refundResponse as OkObjectResult).Value).IsInstanceOf<RefundSuccessEvent>();
             RefundSuccessEvent result = (RefundSuccessEvent)(refundResponse as OkObjectResult).Value;
@@ -130,9 +130,9 @@ namespace PaymentGateawayTests
         public void SucessfullAuthorization_Void()
         {
             var response = AuthController.Post(
-            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
+            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
-            var voidResponse = VoidController.Get(new VoidRequestModel(tID), TransactionBucket).Result;
+            var voidResponse = VoidController.Get(new VoidRequestModel(tID)).Result;
             Check.That(voidResponse).IsInstanceOf<OkObjectResult>();
             Check.That((voidResponse as OkObjectResult).Value).IsInstanceOf<VoidSuccessEvent>();
             VoidSuccessEvent result = (VoidSuccessEvent)(voidResponse as OkObjectResult).Value;
@@ -148,11 +148,11 @@ namespace PaymentGateawayTests
         public async Task SucessfullAuthorization_SingleCapture_SingleRefund_FailedCapture()
         {
             var response = AuthController.Post(
-           new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator, TransactionBucket).Result;
+           new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
             TransactionID tID = ((response as OkObjectResult).Value as AuthorizationSuccessEvent).TransactionID;
-            await CaptureController.Get(new CaptureRequestModel(tID, new Money(16.33F, "JPY")), TransactionBucket);
-            await RefundController.Get(new RefundRequestModel(tID, new Money(6.33F, "JPY")), TransactionBucket);
-            var failedCapture = CaptureController.Get(new CaptureRequestModel(tID, new Money(26.33F, "JPY")), TransactionBucket).Result;
+            await CaptureController.Get(new CaptureRequestModel(tID, new Money(16.33F, "JPY")));
+            await RefundController.Get(new RefundRequestModel(tID, new Money(6.33F, "JPY")));
+            var failedCapture = CaptureController.Get(new CaptureRequestModel(tID, new Money(26.33F, "JPY"))).Result;
             Check.That(failedCapture).IsInstanceOf<BadRequestObjectResult>();
             Check.That((failedCapture as BadRequestObjectResult).Value).IsInstanceOf<CaptureFailedEvent>();
             CaptureFailedEvent result = (CaptureFailedEvent)(failedCapture as BadRequestObjectResult).Value;

@@ -9,7 +9,6 @@ using PaymentGateway.Commands;
 using PaymentGateway.Events;
 using PaymentGateway.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace PaymentGateway.Controllers
 {
@@ -17,33 +16,36 @@ namespace PaymentGateway.Controllers
     [ApiController]
     public class AuthorizeController : ControllerBase
     {
-
+        //Dependency injection for the logger and transaction bucket
         private readonly ILogger<AuthorizeController> _logger;
-        public AuthorizeController(ILogger<AuthorizeController> logger) {
+        private readonly TransactionBucket _bucket;
+        public AuthorizeController(ILogger<AuthorizeController> logger, ITransactionsBucket transactionsBucket) {
             _logger = logger;
+            _bucket = (TransactionBucket)transactionsBucket;
         }
+
 
         // POST api/values
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        public async Task<IActionResult> Post([FromBody] AuthorizationRequestModel request, [FromServices] IGuid transactionIDGenerator, [FromServices] ITransactionsBucket transactionsBucket)
+        public async Task<IActionResult> Post([FromBody] AuthorizationRequestModel request, [FromServices] IGuid transactionIDGenerator )
         {
             
             TransactionID tID = new TransactionID(transactionIDGenerator.Create());
             _logger.LogInformation(new LogConvention(tID.ID,"New TransactionID created.").ToString());
 
-            // transactionsBucket.CreateTransactionRecord(transaction);
-            AuthorizeCommand command = new AuthorizeCommand(tID,request.Card,request.Money);
-            var result = await command.Execute();         
+
+            AuthorizeCommand command = new AuthorizeCommand(tID,request.Card,request.Money); 
+            var result = await command.Execute();                           
             switch (result)
             {
                 case AuthorizationSuccessEvent:
                     _logger.LogInformation(new LogConvention(tID.ID, $"Authorization Resulted(AuthorizationSuccessEvent)").ToString());
                     _logger.LogInformation(new LogConvention (tID.ID,
                         System.Text.Json.JsonSerializer.Serialize<IEvent>((result as AuthorizationSuccessEvent))).ToString());
-                    transactionsBucket.CreateTransactionRecord(new Transaction(tID,command.Card,command.Money));
+                    _bucket.CreateTransactionRecord(new Transaction(tID,command.Card,command.Money));
                     return new OkObjectResult(result as AuthorizationSuccessEvent);
                 case AuthorizationFailedEvent:
                     _logger.LogInformation(new LogConvention(tID.ID, $"Authorization Resulted(AuthorizationFailedEvent)").ToString());
@@ -53,16 +55,9 @@ namespace PaymentGateway.Controllers
                     _logger.LogInformation(new LogConvention(tID.ID, "Unauthorized.").ToString());
                     _logger.LogInformation(new LogConvention(tID.ID,
                       System.Text.Json.JsonSerializer.Serialize<IEvent>(result)).ToString());
-                    return Unauthorized();
-                    
-
-            }
-               
-
-        }
-
-       
-       
+                    return Unauthorized();                    
+            }               
+        }              
     }
 
 
@@ -70,18 +65,29 @@ namespace PaymentGateway.Controllers
     public class CaptureController : ControllerBase
     {
         private readonly ILogger<CaptureController> _logger;
-        public CaptureController(ILogger<CaptureController> logger)
+        private readonly TransactionBucket _bucket;
+        public CaptureController(ILogger<CaptureController> logger, ITransactionsBucket transactionsBucket)
         {
             _logger = logger;
+            _bucket = (TransactionBucket)transactionsBucket;
         }
+
+
         // GET: api/values
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        public async Task<IActionResult> Get([FromBody] CaptureRequestModel request, [FromServices] ITransactionsBucket transactionsBucket)
+        public async Task<IActionResult> Get([FromBody] CaptureRequestModel request)
         {
-            if (transactionsBucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction))
+            /*
+             * So what is this RetrieveTransactionRecord function does? 
+             * Basically we remove the transaction from the memory and the notion
+             * here is that if two captures for the same transaction with the same valid amount
+             * arrive at the same time we will be modifying the same objects,worse we might capture
+             * more money that we want.
+             */
+            if (_bucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction)) 
             {
                 _logger.LogInformation(new LogConvention(request.TransactionID.ID, "Transaction retrieved.").ToString());
                 CaptureCommand command = new CaptureCommand(request?.TransactionID, request.Money, transaction);
@@ -90,10 +96,10 @@ namespace PaymentGateway.Controllers
                 {
                     case CaptureSuccessEvent:
                         _logger.LogInformation(new LogConvention(request.TransactionID.ID, $"Capture Resulted(CaptureSuccessEvent)").ToString());
-                        transactionsBucket.PutTransactionRecord(transaction); //updated transaction as pass by reference
+                        _bucket.PutTransactionRecord(transaction); //updated transaction as pass by reference
                         return new OkObjectResult(result as CaptureSuccessEvent);
                     case CaptureFailedEvent:
-                        transactionsBucket.PutTransactionRecord(transaction);
+                        _bucket.PutTransactionRecord(transaction);
                         return BadRequest(result);
                     default:
                         _logger.LogInformation(new LogConvention(request.TransactionID.ID, "Unauthorized").ToString());
@@ -114,18 +120,21 @@ namespace PaymentGateway.Controllers
     public class VoidController : ControllerBase
     {
         private readonly ILogger<VoidController> _logger;
-        public VoidController(ILogger<VoidController> logger)
+        private readonly TransactionBucket _bucket;
+        public VoidController(ILogger<VoidController> logger, ITransactionsBucket transactionsBucket)
         {
             _logger = logger;
+            _bucket = (TransactionBucket)transactionsBucket;
         }
+
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        public async Task<IActionResult> Get([FromBody] VoidRequestModel request, [FromServices] ITransactionsBucket transactionsBucket)
+        public async Task<IActionResult> Get([FromBody] VoidRequestModel request)
         {
-            if (transactionsBucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction))
-            {
+            if (_bucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction)) {  
                 _logger.LogInformation(new LogConvention(request.TransactionID.ID, "Transaction retrieved.").ToString());
                 VoidCommand command = new VoidCommand(transaction);
                 var result = await command.Execute();
@@ -157,17 +166,21 @@ namespace PaymentGateway.Controllers
     public class RefundController : ControllerBase
     {
         private readonly ILogger<RefundController> _logger;
-        public RefundController(ILogger<RefundController> logger)
+        private readonly TransactionBucket _bucket;
+        public RefundController(ILogger<RefundController> logger, ITransactionsBucket transactionsBucket)
         {
             _logger = logger;
+            _bucket = (TransactionBucket)transactionsBucket;
         }
+
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-        public async Task<IActionResult> Get([FromBody] RefundRequestModel request, [FromServices] ITransactionsBucket transactionsBucket)
+        public async Task<IActionResult> Get([FromBody] RefundRequestModel request)
         {
-            if (transactionsBucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction))
+            if (_bucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction))
             {
                 _logger.LogInformation(new LogConvention(request.TransactionID.ID, "Transaction retrieved.").ToString());
                 RefundCommand command = new RefundCommand(request.Money, transaction);
@@ -176,10 +189,10 @@ namespace PaymentGateway.Controllers
                 {
                     case RefundSuccessEvent:
                         _logger.LogInformation(new LogConvention(request.TransactionID.ID, $"Refund Resulted(RefundSuccessEvent)").ToString());
-                        transactionsBucket.PutTransactionRecord(transaction); //updated transaction as pass by reference
+                        _bucket.PutTransactionRecord(transaction); //updated transaction as pass by reference
                         return new OkObjectResult(result as RefundSuccessEvent);
                     case RefundFailedEvent:
-                        transactionsBucket.PutTransactionRecord(transaction);
+                        _bucket.PutTransactionRecord(transaction);
                         return BadRequest(result);
                     default:
                         _logger.LogInformation(new LogConvention(request.TransactionID.ID, "Unauthorized").ToString());

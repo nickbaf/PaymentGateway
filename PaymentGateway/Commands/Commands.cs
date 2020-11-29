@@ -8,13 +8,6 @@ using PaymentGateway.Events;
 
 namespace PaymentGateway.Commands
 {
-    //public abstract class BaseCommand : ICommand
-    //{
-    //    public abstract BaseEvent Execute();
-
-    //    IEvent ICommand.Execute();
-
-    //}
 
     public class AuthorizeCommand : ICommand<IEvent>
     {
@@ -30,7 +23,6 @@ namespace PaymentGateway.Commands
             Money = money;
         }
 
-        //TODO make bank Interface to simulate lag
         public async Task<IEvent> Execute()
         {
             List<String> ErrorChecks=new List<string>() ;
@@ -60,7 +52,7 @@ namespace PaymentGateway.Commands
 
     public class CaptureCommand : ICommand<IEvent>
     {
-        public TransactionID TransactionID; //obsolete
+        public TransactionID TransactionID; 
         public Money MoneyToCapture;
         public Transaction Transaction;
         public ErrorList Errors = new ErrorList();

@@ -17,4 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\PaymentGateway\PaymentGateway.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UnitTest\" />
+    <Folder Include="PerformanceTest\" />
+  </ItemGroup>
 </Project>
