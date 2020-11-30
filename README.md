@@ -9,7 +9,7 @@ Getting Started
 Prerequisites: 
 > This project requires .Net 5.0 installed. 
 
-	* Clone the project 					           git clone https://github.com/nickbaf/PaymentGateway.git
+	* Clone the project 				git clone https://github.com/nickbaf/PaymentGateway.git
 	* Go to /PaymentGateway/PaymentGateway          cd PaymentGateway   
 	* Build projects                                dotnet publish
 	* Run PaymentGatewayTests to test the API       
