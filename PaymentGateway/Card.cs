@@ -47,6 +47,12 @@ namespace PaymentGateway
             
         }
 
+        /// <summary>
+        /// The notion behind this is that we can add as many check as we want without
+        /// changing the Card object.
+        /// </summary>
+        /// <param name="errors"></param>
+        /// <returns></returns>
         public bool IsCreditCardValid(out List<String> errors)
         {
             ICreditCardValidation validator = this;
