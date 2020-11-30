@@ -97,7 +97,7 @@ Represents the in memory object that stores all transactions.
 
 Testing
 ===
-For testing purposes I used the NUnit library allongside with NFluent for easier assertions and Moq for mocking my dependencies.
+For testing purposes I used the NUnit library allongside with NFluent for easier assertions and Moq for mocking my dependencies. For all testing cases I used credit card numbers found on the web(mock ones NOT stollen ofc).
 
 
 **Assumptions**
