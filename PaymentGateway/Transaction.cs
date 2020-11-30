@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace PaymentGateway
 {
+    /// <summary>
+    /// Class that represents a transaction between the client and us.
+    /// </summary>
     public class Transaction : ITransaction 
     {
         public TransactionID TransactionID { get; }

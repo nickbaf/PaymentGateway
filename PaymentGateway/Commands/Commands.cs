@@ -6,6 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Events;
 
+/// <summary>
+/// Represents a series of actions that need to be taken for the action that the command represents.
+/// A sussesfull command will create an SuccessEvent, otherwise a failiure event will be created.
+//  Example: The AuthorizeCommand takes all the nessecary steps for performing the authorization of a transaction.
+//  This includes, amount, currency and creadit card checks.
+//  Execute: Instructs the object to execute the nessesary steps. Returns a success or failed event.
+/// </summary>
 namespace PaymentGateway.Commands
 {
 
@@ -23,6 +30,12 @@ namespace PaymentGateway.Commands
             Money = money;
         }
 
+        /// <summary>
+        /// Executing an authorization command. Here, we have all the data we need that are parsed from the API request.
+        /// The function will check for credit card errors, and validate the amount and currency given.
+        /// If all the checks pass the command will contact the Mock bank and send a AuthorizationSuccessEvent.
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEvent> Execute()
         {
             List<String> ErrorChecks=new List<string>() ;
@@ -33,12 +46,17 @@ namespace PaymentGateway.Commands
 
             if(ValidCard!=null && ValidCard!=false && ValidMoney!=null && ValidMoney!=false)
             {
-                SentCommandToBank(this);
+                SentCommandToBank(this); //MockBank
                 return new AuthorizationSuccessEvent(TransactionID, Card.Number, Money);
             }
             return new AuthorizationFailedEvent(TransactionID, Card?.Number, Money,Errors);
         }
 
+        /// <summary>
+        /// This was a last minute addition. A Mock Bank was created to simulate a direct link
+        /// to and from the Authorization bank. For simplicity and lack of time only 1 bank is supported.
+        /// </summary>
+        /// <param name="command"></param>
         public void SentCommandToBank(ICommand<IEvent> command)
         {
 
@@ -107,7 +125,6 @@ namespace PaymentGateway.Commands
 
         public async Task<IEvent> Execute()
         {
-            //contact bank
             if(Transaction is not null && Transaction.Strategy is not null)
             {
                ErrorList errorList= new ErrorList();

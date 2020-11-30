@@ -14,23 +14,26 @@ namespace PaymentGateway
 
         public sealed bool LuhnCheck(Card c)
         {
-           
-            String CardNumber = c.Number;
-            
-            if (!short.TryParse(CardNumber[CardNumber.Length - 1].ToString(), out short sum)) return false;
-            short b;
-            for (int i = 0; i < CardNumber.Length-1; i++)
+             
+            String CardNumber = string.IsNullOrEmpty(c?.Number)?string.Empty:c.Number.Replace(" ","");
+
+            if (CardNumber.Length > 0 && short.TryParse(CardNumber[CardNumber.Length - 1].ToString(), out short sum))
             {
-                //not the most elegant way I know..... :(
-                b = short.Parse(CardNumber[i].ToString());
-                if (i % 2 == 0) b *= 2;
+                short b;
+                for (int i = 0; i < CardNumber.Length - 1; i++)
+                {
+                    //not the most elegant way I know..... :(
+                    if (!short.TryParse(CardNumber[i].ToString(), out b)) return false;
+                    if (i % 2 == 0) b *= 2;
 
 
-                if (b > 9) b -= 9;
+                    if (b > 9) b -= 9;
 
-                sum += b;
+                    sum += b;
+                }
+                return sum % 10 == 0;
             }
-            return sum % 10 == 0;
+            return false;
         }
     
 

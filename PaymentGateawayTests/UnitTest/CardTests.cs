@@ -5,11 +5,11 @@ using PaymentGateway;
 namespace PaymentGateawayTests
 {
     [TestFixture]
-    public class CardTests
+    public class CardValidationShould
     {
 
         [Test]
-        public void CardExpired()
+        public void RefuseExpiredCard()
         {
             ExpirationMonthAndYear ex = new ExpirationMonthAndYear("05", "20");
             Check.That(ex.CardHasNotExpiredYet()).IsFalse();
@@ -17,21 +17,35 @@ namespace PaymentGateawayTests
 
 
         [Test]
-        public void CardNotExpired()
+        public void AcceptNonExpiredCard()
         {
             ExpirationMonthAndYear ex = new ExpirationMonthAndYear("03", "21");
             Check.That(ex.CardHasNotExpiredYet()).IsTrue();
         }
 
         [Test]
-        public void CardInvalid()
+        public void RefuseInvalidCard()
         {
             ExpirationMonthAndYear ex = new ExpirationMonthAndYear("03", "21");
             Card c = new Card("4000000000000000",ex,"123");
             Check.That(c.IsCreditCardValid(out _)).IsFalse();
         }
 
-        //credit card same month year
+
+        [Test]
+        public void AcceptCreditCardExpiringThisMonth()
+        {
+            ExpirationMonthAndYear ex = new ExpirationMonthAndYear(System.DateTime.Now.Month.ToString(), System.DateTime.Now.Year.ToString());
+            Card c = new Card("5186124094923094", ex, "123");
+            Check.That(c.IsCreditCardValid(out _)).IsTrue();
+        }
+
+        [Test]
+        public void RefuseNullCreditcard()
+        {
+             Card c = new Card(null,null,null);
+            Check.That(c.IsCreditCardValid(out _)).IsFalse();
+        }
 
 
 

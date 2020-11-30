@@ -8,7 +8,7 @@ using PaymentGateway.Events;
 namespace PaymentGateawayTests
 {
     [TestFixture]
-    public class CommandsTest
+    public class CommandShouldSentEventOfType
     {
         Card c;
         Money m;
@@ -22,34 +22,34 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void ValidAuthorizationCommand()
+        public void SuccessAsAuthorizationValid()
         {
             Check.That(new AuthorizeCommand(new TransactionID(), c, m).Execute().Result).IsInstanceOf<AuthorizationSuccessEvent>();
         }
 
 
         [Test]
-        public void InvalidAuthorizationCommand()
+        public void FailiureAsAuthorizationInvalid()
         {
             Check.That(new AuthorizeCommand(new TransactionID(),new Card("INVALID CARD",null,"XXXX"), m).Execute().Result).IsInstanceOf<AuthorizationFailedEvent>();
         }
 
 
         [Test]
-        public void ValidCaptureCommand()
+        public void SuccessAsCaptureValid()
         {
             Check.That(new CaptureCommand(t.TransactionID,m,t).Execute().Result).IsInstanceOf<CaptureSuccessEvent>();
 
         }
 
         [Test]
-        public void InvalidCaptureCommand_BecauseNoID()
+        public void FailiureAsCaptureWithNoIDInvalid()
         {
             Check.That(new CaptureCommand(null, null, null).Execute().Result).IsInstanceOf<CaptureFailedEvent>();
         }
 
         [Test]
-        public void InvalidCaptureCommand_BecauseNullMoney()
+        public void FailiureAsCaptureInvalidBecauseNullMoney()
         {
             Check.That(new CaptureCommand(t.TransactionID, null, t).Execute().Result).IsInstanceOf<CaptureFailedEvent>();
 
@@ -57,7 +57,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void InvalidCaptureCommand_BecauseNullTransaction()
+        public void FailiureAsACaptureInvalidBecauseNullTransaction()
         {
             Check.That(new CaptureCommand(t.TransactionID, m, null).Execute().Result).IsInstanceOf<CaptureFailedEvent>();
 
@@ -65,19 +65,19 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void ValidVoidCommand()
+        public void SuccessAsVoidValid()
         {
             Check.That(new VoidCommand(t).Execute().Result).IsInstanceOf<VoidSuccessEvent>();
         }
 
         [Test]
-        public void InvalidVoidCommand()
+        public void FailiureAsVoidInvalid()
         {
             Check.That(new VoidCommand(null).Execute().Result).IsInstanceOf<VoidSuccessEvent>();
         }
 
         [Test]
-        public void ValidRefundCommand()
+        public void SucessAsRefundValid()
         {
             t = new Transaction(new TransactionID(), c, new Money(0f, "JPY"));
             t.SetAlreadyCapturedMoney(m);
@@ -85,13 +85,13 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void InValidRefundCommand_BecauseMoneyInvalid()
+        public void FailiureAsRefundInvalidBecauseMoneyInvalid()
         {
             Check.That(new RefundCommand(new Money(float.MaxValue, null), t).Execute().Result).IsInstanceOf < RefundFailedEvent>();
         }
 
         [Test]
-        public void InValidRefundCommand_BecauseNullArguments()
+        public void FailiureAsARefundInvalid_BecauseNullArguments()
         {
             Check.That(new RefundCommand(null,null).Execute().Result).IsInstanceOf<RefundFailedEvent>();
         }

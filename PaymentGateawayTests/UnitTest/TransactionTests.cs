@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PaymentGateawayTests
 {
     [TestFixture]
-    public class TransactionTests
+    public class TransactionShould
     {
 
 
@@ -25,7 +25,7 @@ namespace PaymentGateawayTests
     
 
         [Test]
-        public void ValidCaptureTransaction_ShouldPass()
+        public void ProduceNoErrorsOnValidTransaction()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(150.55F, "JPY");
@@ -34,7 +34,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void ValidCaptureTransaction_ShouldRetractTheCorrectAmmount()
+        public void RetractTheCorrectAmmount()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(150.55F, "JPY");
@@ -44,7 +44,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void ValidCaptureTransaction_ShouldCaptureTheCorrectAmmount()
+        public void CaptureTheCorrectAmmount()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(150.55F, "JPY");
@@ -52,7 +52,7 @@ namespace PaymentGateawayTests
             Check.That<float>(ValidTransaction.AlreadyCapturedMoney.Amount).IsEqualTo<float>(MoneyToBeCaptured.Amount);
         }
         [Test]
-        public void InvalidCaptureTransaction_ShouldFail_AsMoneyNegative()
+        public void ShouldFail_AsMoneyNegative()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(-150.55F, "JPY");
@@ -65,7 +65,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void InvalidCaptureTransaction_ShouldFail_AsMoneyGreaterThanAmountAuthorized()
+        public void ShouldFail_AsMoneyGreaterThanAmountAuthorized()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(99999999999.999999F, "JPY");
@@ -78,7 +78,7 @@ namespace PaymentGateawayTests
         }
 
 
-        public void InvalidCaptureTransaction_ShouldFail_AsCurrencyNotSame()
+        public void ShouldFail_AsCurrencyNotSame()
         {
             Transaction ValidTransaction = new Transaction(tID, c, m);
             Money MoneyToBeCaptured = new Money(999.99F, "JPY");
@@ -91,7 +91,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void ValidRefundTransaction_ShouldPass()
+        public void ProduceNoErrorsOnValidRefund()
         {
             Transaction ValidTransaction = new Transaction(tID, c, new Money(0,"JPY"));
             ValidTransaction.SetAlreadyCapturedMoney(m);
@@ -100,7 +100,6 @@ namespace PaymentGateawayTests
             Check.That<List<String>>(TransactionErrors).IsEmpty<List<String>>();
         }
 
-        //tests should continue here
 
     }
 }

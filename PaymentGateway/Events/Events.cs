@@ -14,9 +14,7 @@ namespace PaymentGateway.Events
         /// As per the exercise instructions for every failed output we return the cardNumber,
         /// amount and the error message, that is the credit card number and the message.
         /// </summary>
-        /// <param name="cardNumber"></param>
-        /// <param name="amountAndCurrencyAvailable"></param>
-        /// <param name="errors"></param>
+        /// <param name="errors">A string formated as "$CreditCardNumber $error" e.x 4000 0000 0000 0119: authorisation failure</param>
         protected BaseEvent(string cardNumber, Money amountAndCurrencyAvailable,ErrorList errors)
         {
             CardNumber = cardNumber;

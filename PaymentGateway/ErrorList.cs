@@ -5,7 +5,7 @@ using System.Text;
 namespace PaymentGateway
 { 
     /// <summary>
-    /// Error list
+    /// Error list represents a list of errors raised.
     /// </summary>
     public class ErrorList:IErrorList<List<String>>
     {

@@ -17,4 +17,18 @@
     <Folder Include="Events\" />
     <Folder Include="Commands\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Readme.md">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Readme.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Readme.Designer.cs">
+      <DependentUpon>Readme.md</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

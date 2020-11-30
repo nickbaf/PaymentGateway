@@ -4,9 +4,14 @@ using System.Linq;
 
 namespace PaymentGateway
 {
+    /// <summary>
+    /// Class that represents Money that includes an amount and currency.
+    /// Implements IMoneyValidators for checking that amount and currency are valid as well as the
+    /// captured and refunded money will result in a valid Money object.
+    /// </summary>
     public class Money: IMoneyValidators
     {
-        public float Amount { get; set; } //float vs string... Choosing float for memory performance
+        public float Amount { get; set; } 
         public string Currency { get; set; }
 
 

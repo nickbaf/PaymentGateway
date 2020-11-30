@@ -42,7 +42,8 @@ namespace PaymentGateway
 
         ~Card()
         {
-            CVV = null;
+            Number = null;
+               CVV = null;
             
         }
 
@@ -55,6 +56,10 @@ namespace PaymentGateway
  
     }
 
+
+    /// <summary>
+    /// Class that represents the expiration date and number of a credit card
+    /// </summary>
     public class ExpirationMonthAndYear
     {
         public string Month { get; set; }

@@ -14,7 +14,7 @@ using Moq;
 namespace PaymentGateawayTests
 {
     [TestFixture]
-    public class APIFlowTests
+    public class APIShould
     {
         AuthorizeController AuthController;
         CaptureController CaptureController;
@@ -44,7 +44,7 @@ namespace PaymentGateawayTests
 
 
         [Test]
-        public void SucessfullAuthorization_SingleCaptureAsync()
+        public void SucessfullyAuthorize_AndCaptureOnce()
         {
 
             var response = AuthController.Post(
@@ -63,7 +63,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public async Task SucessfullAuthorization_MultipleCapture()
+        public async Task SucessfullyAuthorizate_AndCaptureMany()
         {
             var response = AuthController.Post(
             new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
@@ -85,7 +85,7 @@ namespace PaymentGateawayTests
 
 
         [Test]
-        public async Task SucessfullAuthorization_SingleCapture_SingleRefund()
+        public async Task SucessfullyAuthorize_CaptureOnce_AndRefundOnce()
         {
             var response = AuthController.Post(
             new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
@@ -104,7 +104,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public async Task SucessfullAuthorization_SingleCapture_MultipleRefund()
+        public async Task SucessfullyAuthorize_CaptureOnce_AndRefundMany()
         {
             var response = AuthController.Post(
             new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
@@ -127,7 +127,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void SucessfullAuthorization_Void()
+        public void SucessfullyAuthorize_AndVoid()
         {
             var response = AuthController.Post(
             new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;
@@ -145,7 +145,7 @@ namespace PaymentGateawayTests
         //**********************************************************************
 
         [Test]
-        public async Task SucessfullAuthorization_SingleCapture_SingleRefund_FailedCapture()
+        public async Task SucessfullyAuthorize_CaptureOnce_RefundOnce_RefuseToCapture()
         {
             var response = AuthController.Post(
            new PaymentGateway.Models.AuthorizationRequestModel(Card, Money), TransactionIDGenerator).Result;

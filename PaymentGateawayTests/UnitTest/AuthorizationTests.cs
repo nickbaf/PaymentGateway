@@ -13,11 +13,11 @@ using Microsoft.Extensions.Logging;
 namespace PaymentGateawayTests
 {
     [TestFixture]
-    public class AuthorizationTests
+    public class AuthorizationControllerShould
     {
 
         [Test]
-        public void ValidAuthorization()
+        public void SuccesfullyAuthorizeValidRequest()
         {
             var loggerMock = new Mock<ILogger<AuthorizeController>>();
             var transactionBucketMock = new Mock<TransactionBucket>();
@@ -40,7 +40,7 @@ namespace PaymentGateawayTests
         }
 
         [Test]
-        public void InValidAuthorization_Expired_CreditCard()
+        public void RefuseToAuthorize_ExpiredCreditCard()
         {
             var loggerMock = new Mock<ILogger<AuthorizeController>>();
             var transactionBucketMock = new Mock<TransactionBucket>();
@@ -61,8 +61,8 @@ namespace PaymentGateawayTests
             Check.That<TransactionID>(result.TransactionID).IsNotNull<TransactionID>();
         }
 
-
-        public void InValidAuthorization_Negative_Amount()
+        [Test]
+        public void RefuseToAuthorize_NegativeAmount()
         {
             var loggerMock = new Mock<ILogger<AuthorizeController>>();
             var transactionBucketMock = new Mock<TransactionBucket>();
@@ -84,8 +84,8 @@ namespace PaymentGateawayTests
             Check.That<TransactionID>(result.TransactionID).IsNotNull<TransactionID>();
         }
 
-
-        public void InValidAuthorization_Invalid_CreditCard()
+        [Test]
+        public void RefuseToAuthorize_InvalidCreditCard()
         {
             var loggerMock = new Mock<ILogger<AuthorizeController>>();
             var transactionBucketMock = new Mock<TransactionBucket>();
@@ -94,7 +94,7 @@ namespace PaymentGateawayTests
             var MockGuidGenerator = new Mock<IGuid>();
 
 
-            Card c = new Card("5186124094923094", new ExpirationMonthAndYear("11", "25"), "123");
+            Card c = new Card("0000 I AM AN INVALID CREDIT CARD &&**((", new ExpirationMonthAndYear("11", "25"), "123");
             Money m = new Money(156F, "GBP");
 
             var response = Controller.Post(
@@ -107,6 +107,50 @@ namespace PaymentGateawayTests
             Check.That<TransactionID>(result.TransactionID).IsNotNull<TransactionID>();
         }
 
-       
+        [Test]
+        public void RefuseToAuthorize_InvalidCreditCard_WithInvalidExpirationDate()
+        {
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            var transactionBucketMock = new Mock<TransactionBucket>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object, transactionBucketMock.Object);
+
+            var MockGuidGenerator = new Mock<IGuid>();
+
+
+            Card c = new Card("0000", new ExpirationMonthAndYear("November",null), "123");
+            Money m = new Money(156F, "GBP");
+
+            var response = Controller.Post(
+                new PaymentGateway.Models.AuthorizationRequestModel(c, m), MockGuidGenerator.Object).Result;
+            Check.That(response).IsInstanceOf<BadRequestObjectResult>();
+            Check.That((response as BadRequestObjectResult).Value).IsInstanceOf<AuthorizationFailedEvent>();
+            AuthorizationFailedEvent result = (AuthorizationFailedEvent)(response as BadRequestObjectResult).Value;
+            Check.That<String>(result.CardNumber).IsEqualTo<String>(c.Number);
+            Check.That<Money>(result.AmountAndCurrencyAvailable).IsEqualTo<Money>(m);
+            Check.That<TransactionID>(result.TransactionID).IsNotNull<TransactionID>();
+        }
+
+        [Test]
+        public void RefuseToAuthorize_NullRequest()
+        {
+            var loggerMock = new Mock<ILogger<AuthorizeController>>();
+            var transactionBucketMock = new Mock<TransactionBucket>();
+            AuthorizeController Controller = new AuthorizeController(loggerMock.Object, transactionBucketMock.Object);
+
+            var MockGuidGenerator = new Mock<IGuid>();
+
+
+            Card c = new Card(null, null,null);
+            Money m = null;
+
+            var response = Controller.Post(
+                new PaymentGateway.Models.AuthorizationRequestModel(c, m), MockGuidGenerator.Object).Result;
+            Check.That(response).IsInstanceOf<BadRequestObjectResult>();
+            Check.That((response as BadRequestObjectResult).Value).IsInstanceOf<AuthorizationFailedEvent>();
+            AuthorizationFailedEvent result = (AuthorizationFailedEvent)(response as BadRequestObjectResult).Value;
+            Check.That<String>(result.CardNumber).IsEqualTo<String>(c.Number);
+            Check.That<Money>(result.AmountAndCurrencyAvailable).IsEqualTo<Money>(m);
+            Check.That<TransactionID>(result.TransactionID).IsNotNull<TransactionID>();
+        }
     }
 }

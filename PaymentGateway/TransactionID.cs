@@ -15,11 +15,12 @@ namespace PaymentGateway
             ID = new Guid();
         }
 
+       
         public override bool Equals(Object obj)
         {
             return ID.Equals((obj as TransactionID).ID);
         }
-
+        //overriding equals must override hascode
         public override int GetHashCode()
         {
             return base.GetHashCode();

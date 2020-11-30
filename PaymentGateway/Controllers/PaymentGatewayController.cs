@@ -9,7 +9,9 @@ using PaymentGateway.Commands;
 using PaymentGateway.Events;
 using PaymentGateway.Models;
 
-
+/// <summary>
+/// The main API Controller
+/// </summary>
 namespace PaymentGateway.Controllers
 {
     [Route("api/authorize")]
@@ -81,11 +83,11 @@ namespace PaymentGateway.Controllers
         public async Task<IActionResult> Get([FromBody] CaptureRequestModel request)
         {
             /*
-             * So what is this RetrieveTransactionRecord function does? 
+             * So what is the main purpose of RetrieveTransactionRecord?
              * Basically we remove the transaction from the memory and the notion
-             * here is that if two captures for the same transaction with the same valid amount
+             * behind this is that if two captures for the same transaction with the same valid amount
              * arrive at the same time we will be modifying the same objects,worse we might capture
-             * more money that we want.
+             * more money that we want. Remember my assumption is that we make all the checks not the bank.
              */
             if (_bucket.RetrieveTransactionRecord(request?.TransactionID, out Transaction transaction)) 
             {

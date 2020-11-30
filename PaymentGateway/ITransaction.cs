@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace PaymentGateway
 {
     /// <summary>
-    /// Interface that defines what are the checks for a transaction
+    /// Interface that defines the two transaction tasks.
     /// </summary>
     public interface ITransaction
     {

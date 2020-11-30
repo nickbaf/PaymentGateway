@@ -40,9 +40,9 @@ namespace PaymentGateway
                 .AddJsonOptions(options =>
                 {
 
-                    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-            services.AddSingleton<ITransactionsBucket, TransactionBucket>();
+                    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());         
                 });
+            services.AddSingleton<ITransactionsBucket, TransactionBucket>();
             services.AddScoped<IGuid, TransactionIDGenerator>();
         }
 
